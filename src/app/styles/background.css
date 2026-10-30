@@ -1,0 +1,319 @@
+/* ==========================================================================
+   ALRS · background.css — "Glass Arena" whole-site esports backdrop
+   Layers: faint honeycomb → red stadium smoke → beams → energy slash →
+   floating glass prisms → dashboard panels → HUD ticks → helmet → scan →
+   corners → glitch → vignette. Theme-aware (onyx default · ivory override).
+   ========================================================================== */
+
+.bg-stage {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+
+  /* ---- onyx (default) ---- */
+  --hex: rgba(255, 60, 84, .10);
+  --beam: rgba(255, 33, 56, .18);
+  --beam-2: rgba(255, 33, 56, .10);
+  --slash: rgba(255, 33, 56, .10);
+  --prism-line: rgba(255, 96, 116, .55);
+  --prism-o: .5;
+  --panel-line: rgba(255, 96, 116, .45);
+  --tick: rgba(255, 33, 56, .34);
+  --corner: rgba(255, 33, 56, .6);
+  --badge: rgba(255, 255, 255, .34);
+  --vignette: rgba(0, 0, 0, .76);
+}
+
+:root[data-theme="ivory"] .bg-stage {
+  --hex: rgba(224, 15, 44, .12);
+  --beam: rgba(224, 15, 44, .12);
+  --beam-2: rgba(224, 15, 44, .07);
+  --slash: rgba(224, 15, 44, .07);
+  --prism-line: rgba(224, 15, 44, .45);
+  --prism-o: .42;
+  --panel-line: rgba(224, 15, 44, .4);
+  --tick: rgba(224, 15, 44, .4);
+  --corner: rgba(224, 15, 44, .6);
+  --badge: rgba(20, 22, 32, .42);
+  --vignette: rgba(18, 20, 28, .16);
+}
+
+/* -------------------------------------------------- faint honeycomb field */
+.bg-stage__honeycomb {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  color: var(--hex);
+  -webkit-mask-image: radial-gradient(ellipse 92% 82% at 50% 40%, #000 10%, transparent 74%);
+  mask-image: radial-gradient(ellipse 92% 82% at 50% 40%, #000 10%, transparent 74%);
+}
+.bg-hex-svg { width: 100%; height: 100%; display: block; }
+.bg-hex-svg polygon { fill: none; stroke: currentColor; stroke-width: 1; }
+
+/* ------------------------------------------------------ red stadium smoke
+   Note: deliberately NO `filter: blur(...)` here. The gradients are already
+   soft, and a full-screen blur recomposited while the layer animates is the
+   single most expensive thing a mobile/Lo-End GPU can do. */
+.bg-stage__smoke { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.bg-smoke {
+  position: absolute;
+  border-radius: 50%;
+  mix-blend-mode: screen;
+  will-change: transform;
+}
+.bg-smoke--a {
+  left: -12%; bottom: -22%; width: 62vw; height: 62vw;
+  background: radial-gradient(circle, rgba(255, 33, 56, .30), transparent 64%);
+  animation: smokeDrift 26s var(--e-in-out) infinite alternate;
+}
+.bg-smoke--b {
+  right: -16%; top: 4%; width: 54vw; height: 54vw;
+  background: radial-gradient(circle, rgba(196, 8, 42, .28), transparent 62%);
+  animation: smokeDrift 34s var(--e-in-out) infinite alternate-reverse;
+}
+.bg-smoke--c {
+  left: 32%; bottom: -32%; width: 68vw; height: 46vw;
+  background: radial-gradient(circle, rgba(255, 84, 104, .18), transparent 68%);
+  animation: smokeDrift 30s ease-in-out infinite alternate;
+}
+:root[data-theme="ivory"] .bg-smoke { mix-blend-mode: multiply; opacity: .5; }
+
+/* ------------------------------------------------------------ beams ------ */
+.bg-stage__beams {
+  position: absolute;
+  left: -10%; right: -10%; top: 0;
+  height: 112vh;
+  z-index: 2;
+  background:
+    conic-gradient(from 205deg at 18% -12%, transparent 0 7deg, var(--beam) 7deg 11deg, transparent 11deg 21deg),
+    conic-gradient(from 335deg at 82% -12%, transparent 0 7deg, var(--beam-2) 7deg 11.5deg, transparent 11.5deg 21deg),
+    conic-gradient(from 270deg at 50% -22%, transparent 0 10deg, var(--beam) 10deg 16deg, transparent 16deg 34deg);
+  -webkit-mask-image: linear-gradient(to bottom, #000 4%, transparent 68%);
+  mask-image: linear-gradient(to bottom, #000 4%, transparent 68%);
+  opacity: .9;
+  animation: beamSway 13s var(--e-in-out) infinite alternate;
+}
+
+/* ------------------------------------------------------------ slash ------ */
+.bg-stage__slash {
+  position: absolute;
+  inset: -30%;
+  z-index: 3;
+  background-image:
+    repeating-linear-gradient(116deg, transparent 0 60px, var(--slash) 60px 61px, transparent 61px 168px),
+    repeating-linear-gradient(116deg, transparent 0 132px, var(--slash) 132px 134px, transparent 134px 300px);
+  pointer-events: none;
+}
+
+/* ------------------------------------------------------ glass prisms ----- */
+.bg-stage__prisms { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
+.bg-prism {
+  position: absolute;
+  color: var(--prism-line);
+  opacity: var(--prism-o);
+  animation: prismFloat 13s var(--e-in-out) infinite;
+  will-change: transform;
+}
+.bg-prism svg { width: 100%; height: 100%; display: block; }
+
+/* sharp shards, each with its own lean so the field feels shattered */
+.bg-prism.p0 { left: 4%;  top: 12%;  width: min(17vw, 215px); height: min(24vw, 300px); --rot: -12deg; }
+.bg-prism.p1 { right: 6%; top: 6%;   width: min(15vw, 190px); height: min(22vw, 270px); --rot: 9deg;  animation-delay: -4s; }
+.bg-prism.p2 { left: 44%; top: 4%;   width: min(11vw, 140px); height: min(16vw, 190px); --rot: -6deg; animation-duration: 18s; animation-delay: -7s; }
+.bg-prism.p3 { right: 18%; bottom: 8%; width: min(12vw, 155px); height: min(18vw, 220px); --rot: 14deg; animation-delay: -2s; }
+.bg-prism.p4 { left: 14%; bottom: 22%; width: min(8vw, 105px);  height: min(12vw, 150px); --rot: 7deg;  animation-duration: 20s; animation-delay: -10s; }
+.bg-prism.p5 { right: 30%; top: 30%;  width: min(9vw, 118px);  height: min(13vw, 160px); --rot: -18deg; animation-delay: -6s; }
+.bg-prism.p6 { left: 28%; top: 58%;   width: min(7vw, 92px);   height: min(11vw, 130px); --rot: -9deg; animation-duration: 17s; }
+.bg-prism.p7 { right: 42%; bottom: -4%; width: min(6vw, 80px);  height: min(9vw, 110px);  --rot: 11deg; animation-delay: -8s; }
+
+/* ----------------------------------------------- dashboard glass panels --- */
+.bg-stage__panels { position: absolute; inset: 0; z-index: 5; pointer-events: none; }
+.bg-panel {
+  position: absolute;
+  border: 1px solid var(--panel-line);
+  border-radius: 7px;
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, .08), rgba(255, 33, 56, .08)),
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, .10), transparent 60%);
+  box-shadow: 0 0 22px rgba(255, 33, 56, .12), inset 0 0 22px rgba(255, 33, 56, .06);
+  overflow: hidden;
+  opacity: var(--prism-o);
+  animation: panelFloat 16s var(--e-in-out) infinite;
+  will-change: transform;
+}
+.bg-panel::before {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  height: 12%;
+  background: linear-gradient(90deg, rgba(255, 33, 56, .55), transparent);
+}
+.bg-panel::after {
+  content: "";
+  position: absolute;
+  inset: 22% 10% 12%;
+  background-image:
+    linear-gradient(to right, var(--panel-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--panel-line) 1px, transparent 1px);
+  background-size: 14px 14px;
+  opacity: .35;
+}
+.bg-panel.d0 { left: 3%;  top: 34%; width: min(16vw, 200px); height: min(11vw, 130px); --rot: -4deg; }
+.bg-panel.d1 { right: 4%; top: 40%; width: min(15vw, 190px); height: min(10vw, 120px); --rot: 3deg; animation-delay: -5s; }
+.bg-panel.d2 { right: 22%; top: 60%; width: min(11vw, 140px); height: min(8vw, 96px);  --rot: -2deg; animation-duration: 20s; }
+.bg-panel.d3 { left: 22%; top: 66%; width: min(10vw, 130px); height: min(7vw, 88px);  --rot: 5deg; animation-delay: -9s; }
+
+/* ------------------------------------------------------ HUD tick rulers */
+.bg-stage__ticks {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  background-image: repeating-linear-gradient(to bottom, var(--tick) 0 2px, transparent 2px 42px);
+  -webkit-mask: linear-gradient(90deg, #000 0, transparent 8%, transparent 92%, #000 100%);
+  mask: linear-gradient(90deg, #000 0, transparent 8%, transparent 92%, #000 100%);
+  opacity: .6;
+  pointer-events: none;
+}
+
+/* ------------------------------------------ brand helmet watermark ------ */
+.bg-stage__helmet {
+  position: absolute;
+  right: -5vw;
+  bottom: -9vh;
+  z-index: 6;
+  width: min(46vw, 560px);
+  height: min(46vw, 560px);
+  color: var(--red);
+  --mark-plume: var(--red);
+  --mark-shell: var(--red);
+  opacity: .05;
+  filter: blur(.4px);
+  pointer-events: none;
+}
+.bg-stage__helmet svg { width: 100%; height: 100%; }
+
+/* ---------------------------------------------------------- scan sweep */
+.bg-stage__scan {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -300px;
+  z-index: 7;
+  height: 260px;
+  background: linear-gradient(180deg, transparent, var(--beam) 50%, transparent);
+  opacity: .5;
+  animation: stageSweep 11s linear infinite;
+  will-change: transform;
+  pointer-events: none;
+}
+
+/* -------------------------------------------------- HUD corner brackets */
+.bg-stage__corners { position: absolute; inset: 0; z-index: 8; pointer-events: none; }
+.bg-stage__corner {
+  position: absolute;
+  width: 66px;
+  height: 66px;
+  border: 2px solid var(--corner);
+}
+.bg-stage__corner--tl { top: 20px; left: 20px; border-right: 0; border-bottom: 0; }
+.bg-stage__corner--tr { top: 20px; right: 20px; border-left: 0; border-bottom: 0; }
+.bg-stage__corner--bl { bottom: 20px; left: 20px; border-right: 0; border-top: 0; }
+.bg-stage__corner--br { bottom: 20px; right: 20px; border-left: 0; border-top: 0; }
+.bg-stage__badge {
+  position: absolute;
+  font-family: var(--font-mono);
+  font-size: .6rem;
+  letter-spacing: .28em;
+  text-transform: uppercase;
+  color: var(--badge);
+}
+.bg-stage__badge--tl { top: 36px; left: 48px; }
+.bg-stage__badge--br { bottom: 36px; right: 48px; }
+
+/* -------------------------------------------------------------- glitch */
+.bg-stage__glitch {
+  position: absolute;
+  inset: 0;
+  z-index: 9;
+  background-image:
+    repeating-linear-gradient(to bottom, transparent 0 3px, rgba(255, 255, 255, .03) 3px 4px),
+    linear-gradient(90deg, rgba(255, 33, 56, .05), transparent 30%, transparent 70%, rgba(255, 90, 110, .05));
+  mix-blend-mode: overlay;
+  opacity: .35;
+  animation: bgGlitch 14s steps(3, end) infinite;
+  pointer-events: none;
+}
+
+/* ----------------------------------------------------- edge vignette */
+.bg-stage__vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  background: radial-gradient(ellipse 130% 106% at 50% 26%, transparent 50%, var(--vignette) 100%);
+  pointer-events: none;
+}
+
+/* ------------------------------------------------------------ keyframes */
+@keyframes smokeDrift {
+  from { transform: translate3d(-3%, 0, 0) scale(1); }
+  to   { transform: translate3d(4%, -4%, 0) scale(1.14); }
+}
+@keyframes beamSway {
+  from { transform: translateX(-1.4%); }
+  to   { transform: translateX(1.4%); }
+}
+@keyframes prismFloat {
+  0%, 100% { transform: translateY(0) rotate(var(--rot, 0deg)); }
+  50%      { transform: translateY(-26px) rotate(calc(var(--rot, 0deg) + 7deg)); }
+}
+@keyframes panelFloat {
+  0%, 100% { transform: translateY(0) translateX(0) rotate(var(--rot, 0deg)); }
+  50%      { transform: translateY(16px) translateX(-8px) rotate(var(--rot, 0deg)); }
+}
+@keyframes stageSweep {
+  0%   { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(0, calc(100vh + 300px), 0); }
+}
+@keyframes bgGlitch {
+  0%, 100% { transform: translate(0); }
+  89%      { transform: translate(0); }
+  91%      { transform: translate(-3px, 1.5px); }
+  93%      { transform: translate(2px, -2px); }
+  95%      { transform: translate(-1px, 1px); }
+  97%      { transform: translate(0); }
+}
+
+/* ------------------------------------------------------------- responsive */
+@media (max-width: 900px) {
+  .bg-stage__badge { display: none; }
+  .bg-prism.p2,
+  .bg-panel.d2,
+  .bg-panel.d3 { display: none; }
+}
+
+@media (max-width: 760px) {
+  .bg-stage__corner { width: 44px; height: 44px; }
+  .bg-stage__helmet { width: 68vw; height: 68vw; opacity: .04; }
+  .bg-prism.p0, .bg-prism.p3 { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bg-stage__scan,
+  .bg-stage__beams,
+  .bg-stage__glitch,
+  .bg-smoke,
+  .bg-prism,
+  .bg-panel { animation: none !important; }
+}
+
+/* ------------------------------------------------ arena glow + intensity */
+.bg-glow { opacity: .6; }
+.bg-glow--c {
+  width: 560px;
+  height: 560px;
+  bottom: -180px;
+  left: 42%;
+  background: radial-gradient(circle, rgba(255, 33, 56, .26), transparent 65%);
+  animation: drift 34s var(--e-in-out) infinite alternate;
+}
+.fx-canvas { opacity: 1; }

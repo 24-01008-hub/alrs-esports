@@ -1,0 +1,10 @@
+const fs = require("fs");
+const root = "C:\\Users\\gkuri\\Projects\\alrs-esports";
+const s = fs.readFileSync(root + "\\spartan_hologram_web (1).html", "utf8");
+const m = s.match(/const PLATES=(\[[\s\S]*?\]);\s*\r?\nTHREE\.ColorManagement/);
+console.log("array chars:", m[1].length);
+console.log("plates in original:", (m[1].match(/\{"b":/g) || []).length);
+const t = fs.readFileSync(root + "\\src\\lib\\hologramPlates.ts", "utf8");
+console.log("ts file chars:", t.length);
+console.log("ts plates:", (t.match(/\{"b":/g) || []).length);
+console.log("first 200:", t.slice(0, 200));

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="120" viewBox="0 0 360 120" role="img" aria-label="Keeboreds PH">
+  <rect x="12" y="30" width="56" height="56" rx="12" fill="#101019" stroke="#FF2138" stroke-width="3"/>
+  <rect x="22" y="40" width="15" height="15" rx="4" fill="#FFC531"/>
+  <rect x="42" y="62" width="15" height="15" rx="4" fill="#F2F3F7"/>
+  <text x="84" y="62" font-family="Chakra Petch, Segoe UI, Arial, sans-serif" font-size="36" font-weight="700" letter-spacing="2" fill="#F2F3F7">KEEBOREDS</text>
+  <text x="276" y="62" font-family="Chakra Petch, Segoe UI, Arial, sans-serif" font-size="36" font-weight="700" letter-spacing="2" fill="#FF2138">.PH</text>
+  <text x="86" y="88" font-family="Segoe UI, Arial, sans-serif" font-size="12" letter-spacing="6" fill="#8B8B9E">CUSTOM KEYBOARDS</text>
+</svg>

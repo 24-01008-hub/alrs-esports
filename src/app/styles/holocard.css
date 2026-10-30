@@ -1,0 +1,205 @@
+/* ==========================================================================
+   ALRS · holocard.css — "Hologram Membership Card"
+   Ported from the standalone `ALRS Hologram Membership Card.html`
+   (hologram-projector boot confined to the card slot, 3D pointer tilt,
+   hover-spin and click-to-flip front/back). Everything is scoped under `.hcard` so it can
+   never collide with the site's global component classes (.card, .tier …).
+   Fonts are mapped to the site's Chakra Petch (--font-display).
+   ========================================================================== */
+
+.hcard{
+  --red: #e0182d;
+  --red2: #7d0a16;
+  --glow: #ff3b4e;
+  --cy: #7df3ff;
+  --hd: var(--font-display);
+  --tx: var(--font-display);
+  position: relative; display: block; width: 100%;
+}
+.hcard *{ box-sizing: border-box; }
+
+/* --------------------------------------------------- card scene wrapper --- */
+.hcard__scene{ position: relative; width: min(100%, 500px); margin-inline: auto; }
+
+/* ------------------------------------------------------- glass startup --- */
+.hcard__glass{
+  position: absolute; inset: 0; z-index: 12; overflow: hidden; border-radius: 18px;
+  pointer-events: none;
+}
+.hcard__glass__shards{ position: absolute; inset: 0; }
+.hcard__glass__shard{
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.24), rgba(125,243,255,.08) 38%, rgba(224,24,45,.16) 72%, rgba(255,255,255,.2));
+  box-shadow: inset 0 0 26px rgba(255,255,255,.25), inset 0 0 1px rgba(255,255,255,.85);
+  backdrop-filter: blur(3px) saturate(1.15);
+  will-change: transform, opacity;
+}
+.hcard__glass__crack{ position: absolute; inset: 0; width: 100%; height: 100%; }
+.hcard__glass__crack line{
+  stroke: rgba(255,235,240,.55); stroke-width: .35; vector-effect: non-scaling-stroke;
+}
+.hcard__glass__flash{
+  position: absolute; inset: 0; opacity: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(255,255,255,.95), rgba(255,80,95,.35) 35%, transparent 70%);
+}
+.hcard__glass.is-breaking .hcard__glass__shard{
+  animation: hcardGlassFly .9s cubic-bezier(.2,.7,.3,1) var(--d) forwards;
+}
+.hcard__glass.is-breaking .hcard__glass__crack{ animation: hcardCrackFlash .5s ease forwards; }
+.hcard__glass.is-breaking .hcard__glass__flash{ animation: hcardGlassFlash .7s ease forwards; }
+@keyframes hcardGlassFly{
+  0%{ transform: translate(0,0) rotate(0deg) scale(1); opacity: 1; }
+  100%{ transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(1.04); opacity: 0; }
+}
+@keyframes hcardCrackFlash{ 0%{ opacity: .55; } 30%{ opacity: 1; } 100%{ opacity: 0; } }
+@keyframes hcardGlassFlash{ 0%{ opacity: 0; } 20%{ opacity: .9; } 100%{ opacity: 0; } }
+
+/* ---------------------------------------------------- controls & hint --- */
+.hcard__meta{
+  width: min(100%, 500px); margin: 16px auto 0;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.hcard__replay{
+  background: rgba(6,6,10,.62); backdrop-filter: blur(6px);
+  border: 1px solid rgba(255,80,95,.6); color: #ffb3bb;
+  font: 600 10px var(--tx); letter-spacing: .18em; padding: 6px 12px; cursor: pointer;
+  clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+}
+.hcard__replay:hover, .hcard__replay:focus-visible{
+  background: rgba(224,24,45,.3); outline: 2px solid var(--glow); outline-offset: 2px;
+}
+
+/* ------------------------------------------------------------ 3D stage --- */
+.hcard__stage{
+  perspective: 1400px; position: relative;
+  width: 100%; opacity: 0;
+}
+.hcard__stage.on{ opacity: 1; animation: hcardCardIn .8s .15s cubic-bezier(.22,1,.36,1) both; }
+@keyframes hcardCardIn{
+  from{ opacity: 0; filter: brightness(2.4) blur(6px); transform: scaleY(.6); }
+  to{ opacity: 1; filter: none; transform: none; }
+}
+.hcard__tilt{ transform-style: preserve-3d; transition: transform .25s ease-out; will-change: transform; }
+.hcard__spin, .hcard__flip{ transform-style: preserve-3d; }
+.hcard__flip{ transition: transform .9s cubic-bezier(.3,.8,.2,1); cursor: pointer; }
+.hcard__flip.back{ transform: rotateY(180deg); }
+.hcard__spin.go{ animation: hcardSpin 1.3s cubic-bezier(.45,.05,.2,1); }
+@keyframes hcardSpin{ to{ transform: rotateY(360deg); } }
+.hcard__stage.on .hcard__face{ animation: hcardFlick 5s infinite; }
+@keyframes hcardFlick{ 0%,92%,100%{ opacity:1; } 93%{ opacity:.82; } 94%{ opacity:1; } 96%{ opacity:.9; } }
+
+/* ---------------------------------------------------------------- beam --- */
+.hcard__beam{
+  position: absolute; left: 50%; bottom: -70px; width: 120%; height: 90px; transform: translateX(-50%);
+  background: radial-gradient(ellipse at 50% 50%, rgba(255,59,78,.55), rgba(255,59,78,0) 65%);
+  filter: blur(4px); pointer-events: none;
+}
+.hcard__beam::after{
+  content: ""; position: absolute; left: 12%; right: 12%; top: 50%; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--glow), transparent); box-shadow: 0 0 18px var(--glow);
+}
+
+/* --------------------------------------------------------------- faces --- */
+.hcard__face{
+  position: relative; width: 100%; aspect-ratio: 1.586; border-radius: 18px; overflow: hidden;
+  backface-visibility: hidden; -webkit-backface-visibility: hidden;
+  box-shadow: 0 0 0 1px rgba(255,80,95,.55), 0 0 28px rgba(224,24,45,.45), 0 0 90px rgba(224,24,45,.25);
+}
+.hcard__face--front{
+  background:
+    linear-gradient(115deg, transparent 0 58%, rgba(224,24,45,.9) 58% 59%, transparent 59%),
+    linear-gradient(115deg, transparent 0 61%, rgba(224,24,45,.35) 61% 61.6%, transparent 61.6%),
+    radial-gradient(circle at 78% 46%, rgba(224,24,45,.3), transparent 48%),
+    linear-gradient(160deg, #16161c, #050507 70%);
+}
+.hcard__face--back{ position: absolute; inset: 0; transform: rotateY(180deg); background: #f4f4f6; color: #111; }
+.hcard__face--back::before{ content: ""; position: absolute; left: 0; right: 0; top: 0; height: 26%; background: linear-gradient(100deg, #050507 60%, var(--red) 60.2%); }
+
+/* holographic sheen — --sx tracks the pointer for both faces */
+.hcard__face::after{
+  content: ""; position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen;
+  background:
+    repeating-linear-gradient(0deg, rgba(255,255,255,.05) 0 1px, transparent 1px 3px),
+    linear-gradient(115deg, transparent 30%, rgba(125,243,255,.18) 45%, rgba(255,59,78,.22) 52%, transparent 66%);
+  background-size: 100% 100%, 250% 100%; background-position: 0 0, var(--sx, 120%) 0;
+}
+
+/* ------------------------------------------------------ sweep & grid bg --- */
+.hcard__sweep{
+  position: absolute; left: 0; right: 0; height: 22%; top: -25%; pointer-events: none;
+  background: linear-gradient(180deg, transparent, rgba(255,120,130,.22), transparent);
+  animation: hcardSweep 4.2s linear infinite;
+}
+@keyframes hcardSweep{ to{ top: 110%; } }
+.hcard__grid{
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px);
+  background-size: 22px 22px;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 40%, #000);
+  mask-image: linear-gradient(90deg, transparent, #000 40%, #000);
+}
+
+/* -------------------------------------------------------- front layout --- */
+.hcard__pad{ position: absolute; inset: 0; padding: 5.5% 6%; display: flex; flex-direction: column; }
+.hcard__top{ display: flex; justify-content: space-between; align-items: flex-start; }
+.hcard__org{ font: 700 clamp(10px, 2.7vw, 15px)/1.2 var(--hd); letter-spacing: .12em; font-style: italic; }
+.hcard__org b{ color: var(--red); text-shadow: 0 0 12px rgba(224,24,45,.8); }
+.hcard__badge{
+  font: 700 clamp(7px, 1.7vw, 10px) var(--tx); letter-spacing: .22em;
+  background: var(--red); color: #fff; padding: 4px 10px;
+  clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+}
+.hcard__logo{ position: absolute; right: 8%; top: 17%; width: 25%; }
+.hcard__logo svg, .hcard__logo2 svg{ width: 100%; height: auto; display: block; overflow: visible; filter: drop-shadow(0 0 10px rgba(224,24,45,.7)); }
+.hcard__mid{ margin: auto 0; width: 62%; }
+.hcard__chip{ width: 15%; aspect-ratio: 1.25; border-radius: 6px; background: linear-gradient(135deg, #d9b25c, #8d6a22 55%, #e7c978); position: relative; margin-bottom: 5%; }
+.hcard__chip::before, .hcard__chip::after{ content: ""; position: absolute; background: rgba(0,0,0,.35); }
+.hcard__chip::before{ left: 0; right: 0; top: 50%; height: 1px; }
+.hcard__chip::after{ top: 0; bottom: 0; left: 50%; width: 1px; }
+.hcard__lbl{ font: 600 clamp(7px, 1.6vw, 9px) var(--tx); letter-spacing: .24em; color: #ff8f9b; }
+.hcard__name{ font: 700 clamp(14px, 4.2vw, 22px)/1.1 var(--hd); font-style: italic; letter-spacing: .05em; margin: 3px 0 8px; text-shadow: 0 0 12px rgba(255,255,255,.35); }
+.hcard__id{ font: 700 clamp(11px, 2.9vw, 16px) var(--hd); letter-spacing: .14em; color: #dffcff; text-shadow: 0 0 8px rgba(125,243,255,.8); }
+.hcard__row{ display: flex; gap: 7%; margin-top: 4%; }
+.hcard__row > div{ font: 700 clamp(9px, 2.1vw, 11px) var(--hd); letter-spacing: .06em; }
+.hcard__foot{ font: 600 clamp(7px, 1.4vw, 9px) var(--tx); letter-spacing: .2em; color: #9a9aa3; }
+
+/* --------------------------------------------------------- back layout --- */
+.hcard__bpad{ position: absolute; inset: 0; padding: 5.5% 6%; display: flex; flex-direction: column; }
+.hcard__btitle{ color: #fff; font: 700 clamp(10px, 2.6vw, 14px) var(--hd); font-style: italic; letter-spacing: .12em; height: 20%; display: flex; align-items: center; position: relative; }
+.hcard__terms{ margin-top: 6%; font: 500 clamp(8px, 1.8vw, 11px)/1.5 var(--font-body); color: #333; width: 68%; }
+.hcard__terms b{ color: var(--red2); }
+.hcard__games{ display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4%; }
+.hcard__games span{
+  font: 700 clamp(6px, 1.5vw, 9px) var(--tx); letter-spacing: .12em; padding: 3px 9px;
+  background: #0a0a0d; color: #fff; clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
+}
+.hcard__games span:nth-child(odd){ background: var(--red); }
+.hcard__bar{ margin-top: auto; height: 18%; width: 60%; background: repeating-linear-gradient(90deg, #111 0 2px, #fff 2px 4px, #111 4px 5px, #fff 5px 8px, #111 8px 11px, #fff 11px 12px); }
+.hcard__logo2{ position: absolute; right: 8%; bottom: 8%; width: 17%; }
+.hcard__logo2 svg{ filter: drop-shadow(0 0 5px rgba(224,24,45,.4)); }
+
+/* ---------------------------------------------------------------- hint --- */
+.hcard__hint{
+  font: 600 10px var(--tx); letter-spacing: .22em;
+  color: #ff8f9b; opacity: .7; pointer-events: none;
+}
+
+/* ------------------------------------------------------- emblem trace --- */
+.hcard__tr{ stroke-dasharray: 1000; stroke-dashoffset: 1000; }
+.hcard__stage.on .hcard__tr{ animation: hcardDraw 1.8s .15s ease-out forwards; }
+.hcard__stage.on .hcard__fill{ animation: hcardFin 1s .9s both; }
+@keyframes hcardDraw{ to{ stroke-dashoffset: 0; } }
+@keyframes hcardFin{ from{ opacity: 0; } to{ opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce){
+  .hcard__sweep, .hcard__stage.on .hcard__face{ animation: none; }
+  .hcard__spin.go{ animation: none; }
+  .hcard__tr{ stroke-dashoffset: 0; animation: none !important; }
+  .hcard__fill{ animation: none !important; }
+  .hcard__stage.on{ animation: none; }
+  .hcard__glass__shard{ animation: none !important; }
+  .hcard__glass__crack, .hcard__glass__flash{ animation: none !important; }
+}

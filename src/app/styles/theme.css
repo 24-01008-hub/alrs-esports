@@ -1,0 +1,143 @@
+/* ==========================================================================
+   ALRS · theme.css — dual theme: "onyx" (default, black + red) and
+   "ivory" (white + red). Tokens live in core.css; this file flips them to
+   light and repaints the few glassy surfaces that assume a dark page.
+   ========================================================================== */
+
+:root[data-theme="ivory"] {
+  /* surfaces */
+  --bg: #F2F3F8;
+  --bg-2: #E9EBF2;
+  --surface: #FFFFFF;
+  --surface-2: #F6F7FB;
+  --surface-3: #ECEEF5;
+  --line: rgba(16, 18, 28, .10);
+  --line-2: rgba(16, 18, 28, .17);
+  --line-red: rgba(224, 15, 44, .32);
+
+  /* text */
+  --text: #14161F;
+  --text-2: #3B4152;
+  --muted: #636A7C;
+  --faint: #98A0B2;
+
+  /* brand (slightly deepened for contrast on white) */
+  --red: #EC1230;
+  --red-700: #B60A24;
+  --red-400: #D8324A;
+  --red-100: rgba(236, 18, 48, .10);
+  --gold: #B9860A;
+  --gold-700: #8F6605;
+  --gold-100: rgba(185, 134, 10, .13);
+  --cyan: #078DA3;
+
+  /* elevation */
+  --sh-1: 0 8px 24px rgba(20, 22, 32, .10);
+  --sh-2: 0 18px 48px rgba(20, 22, 32, .16);
+  --sh-red: 0 10px 30px rgba(236, 18, 48, .22);
+}
+
+/* --------------------------------------------------------------- header --- */
+:root[data-theme="ivory"] .site-header {
+  background: rgba(255, 255, 255, .76);
+}
+:root[data-theme="ivory"] .site-header.is-stuck {
+  background: rgba(255, 255, 255, .95);
+  box-shadow: 0 12px 34px rgba(20, 22, 32, .12);
+}
+:root[data-theme="ivory"] .mainnav a:hover,
+:root[data-theme="ivory"] .kbd,
+:root[data-theme="ivory"] .drawer__nav a:hover {
+  background: rgba(16, 18, 28, .05);
+}
+:root[data-theme="ivory"] .mainnav a.is-active,
+:root[data-theme="ivory"] .icon-btn:hover,
+:root[data-theme="ivory"] .drawer__nav a.is-active,
+:root[data-theme="ivory"] .footer__social a:hover,
+:root[data-theme="ivory"] .btn--ghost:hover {
+  color: var(--text);
+}
+:root[data-theme="ivory"] .btn--solid:hover { background: #E1E3EC; }
+
+/* --------------------------------------------------- glass panels → ink --- */
+:root[data-theme="ivory"] .card,
+:root[data-theme="ivory"] .tier,
+:root[data-theme="ivory"] .match,
+:root[data-theme="ivory"] .sponsor,
+:root[data-theme="ivory"] .strat,
+:root[data-theme="ivory"] .cd,
+:root[data-theme="ivory"] .team-hero {
+  background: linear-gradient(165deg, rgba(16, 18, 28, .035), rgba(16, 18, 28, .012));
+}
+:root[data-theme="ivory"] .tier--featured {
+  background: linear-gradient(170deg, rgba(185, 134, 10, .10), rgba(236, 18, 48, .05) 55%, rgba(16, 18, 28, .012));
+}
+:root[data-theme="ivory"] .stat,
+:root[data-theme="ivory"] .hero__stats .stat,
+:root[data-theme="ivory"] .badge,
+:root[data-theme="ivory"] .event,
+:root[data-theme="ivory"] .team-btn,
+:root[data-theme="ivory"] .chip,
+:root[data-theme="ivory"] .tab:hover,
+:root[data-theme="ivory"] .tab__count,
+:root[data-theme="ivory"] .compare thead th,
+:root[data-theme="ivory"] .compare tbody tr:hover td,
+:root[data-theme="ivory"] .compare tbody tr:hover th,
+:root[data-theme="ivory"] .cmdk__foot,
+:root[data-theme="ivory"] .modal__foot,
+:root[data-theme="ivory"] .toast__icon {
+  background: rgba(16, 18, 28, .04);
+}
+:root[data-theme="ivory"] .match:hover {
+  background: linear-gradient(100deg, rgba(236, 18, 48, .07), rgba(16, 18, 28, .012));
+}
+:root[data-theme="ivory"] .mission-panel {
+  background: linear-gradient(140deg, rgba(236, 18, 48, .12), rgba(16, 18, 28, .02) 55%);
+}
+:root[data-theme="ivory"] .mission-panel::before,
+:root[data-theme="ivory"] .cta-band::before {
+  background-image: repeating-linear-gradient(45deg, rgba(16, 18, 28, .05) 0 1px, transparent 1px 14px);
+}
+:root[data-theme="ivory"] .cta-band::before {
+  background:
+    radial-gradient(60% 120% at 50% 100%, rgba(236, 18, 48, .16), transparent 65%),
+    repeating-linear-gradient(90deg, rgba(16, 18, 28, .05) 0 1px, transparent 1px 54px);
+}
+
+/* offer + jersey keep an intentional dark "product" look on both themes */
+:root[data-theme="ivory"] .offer {
+  background:
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, .012) 0 14px, transparent 14px 15px),
+    linear-gradient(160deg, #17141F 0%, #0B0B12 62%, #14070A 100%);
+}
+:root[data-theme="ivory"] .jersey {
+  background: linear-gradient(170deg, #1A121A, #0D0D14);
+}
+
+/* -------------------------------------------------- white text → ink --- */
+:root[data-theme="ivory"] .stat__val,
+:root[data-theme="ivory"] .tier__price b,
+:root[data-theme="ivory"] .player__stats b,
+:root[data-theme="ivory"] .wallet__pts {
+  color: var(--text);
+}
+
+/* --------------------------------------------------- hero outline type --- */
+:root[data-theme="ivory"] .hero__title .outline {
+  -webkit-text-stroke-color: rgba(16, 18, 28, .45);
+}
+:root[data-theme="ivory"] .phero__big {
+  color: rgba(16, 18, 28, .04);
+  -webkit-text-stroke-color: rgba(16, 18, 28, .06);
+}
+
+/* ------------------------------------------------------------- backdrop --- */
+:root[data-theme="ivory"] .bg-noise { opacity: .035; }
+:root[data-theme="ivory"] .bg-glow--a { opacity: .32; }
+:root[data-theme="ivory"] .bg-glow--b { opacity: .22; }
+:root[data-theme="ivory"] .fx-canvas { opacity: .6; }
+:root[data-theme="ivory"] .cursor-glow {
+  background: radial-gradient(circle, rgba(236, 18, 48, .10), transparent 62%);
+}
+:root[data-theme="ivory"] .preloader__bar,
+:root[data-theme="ivory"] .holo3d__hud { color-scheme: light; }

@@ -1,0 +1,82 @@
+/* ==========================================================================
+   ALRS · typography.css — refined type system
+   - fluid hierarchy (core.css) + self-hosted variable fonts (next/font)
+   - optical sizing, balanced headings, pretty paragraph wrapping
+   - tabular numerals wherever counts tick (stats, countdowns, wallets)
+   ========================================================================== */
+
+html {
+  /* anchor jumps clear the sticky header */
+  scroll-padding-top: calc(var(--header-h) + 16px);
+}
+
+body {
+  font-optical-sizing: auto;
+  line-height: 1.62;
+}
+
+/* ------------------------------------------------------------- headings */
+h1,
+h2,
+.h1,
+.h2 {
+  letter-spacing: -0.02em;
+}
+h3,
+h4,
+.h3,
+.h4 {
+  letter-spacing: -0.01em;
+}
+
+/* ----------------------------------------------------------- paragraphs */
+p {
+  text-wrap: pretty;
+}
+.lead {
+  line-height: 1.55;
+  font-optical-sizing: auto;
+}
+.section__head p,
+.footer__brand p {
+  line-height: 1.6;
+}
+
+/* ------------------------------------------------- numerals & tickers */
+.stat__val,
+.cd b,
+.countdown,
+.wallet__pts,
+.lb__xp,
+.xpbar,
+.progress,
+.kbd {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------- all-caps display micro-spacing */
+.chip,
+.eyebrow,
+.mono,
+.tier__name,
+.team-btn b,
+.mainnav a {
+  font-variant-numeric: tabular-nums;
+}
+
+/* -------------------------------------------------------- form legibility
+   iOS zooms the viewport when an input below 16px gains focus. */
+@media (max-width: 700px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
+/* ---------------------------------------------------- selection contrast */
+::selection {
+  background: var(--red);
+  color: #fff;
+  text-shadow: none;
+}

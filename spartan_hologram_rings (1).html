@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Alangilan Red Spartans</title>
+<style>
+html,body{margin:0;height:100%;background:transparent;overflow:hidden}
+canvas{display:block;width:100%;height:100%}
+</style></head><body>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
+import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
+import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
+import {ShaderPass} from 'three/addons/postprocessing/ShaderPass.js';
+import {CopyShader} from 'three/addons/shaders/CopyShader.js';
+
+const PLATES=[{"b":[25,-147,43,-135,53,-101,42,-108,43,-114,41,-116,34,-119,24,-128],"i":[[28,-140,39,-133,41,-122,36,-124,28,-130]],"c":[],"r":[]},{"b":[-27,-147,-24,-145,-25,-101,-54,-73,-54,-98,-45,-113,-43,-135],"i":[[-29,-140,-29,-104,-50,-82,-50,-96,-41,-111,-39,-132]],"c":[],"r":[]},{"b":[25,-118,33,-113,54,-95,54,-73,34,-91,25,-102,24,-105],"i":[[28,-110,50,-93,50,-82,34,-98,28,-106]],"c":[],"r":[]},{"b":[-58,-92,-57,-49,-73,-33,-74,-42,-71,-59],"i":[[-62,-72,-61,-52,-68,-44,-68,-51]],"c":[],"r":[]},{"b":[58,-91,64,-79,71,-56,72,-33,57,-49],"i":[[62,-70,68,-43,62,-51]],"c":[],"r":[[59,-85,64,-76,71,-53,73,-43,72,-33,58,-49]]},{"b":[-1,-75,1,-74,7,-59,28,-25,29,-9,24,-11,23,-19,22,-12,15,-11,14,-9,1,-11,-2,-13,-22,-10,-22,-36,-11,-52],"h":[[-2,-137,2,-137,18,-123,18,-109,15,-105,17,-86,34,-65,73,-25,72,3,53,-18,51,-23,48,-22,47,-18,35,-30,-1,-80,-30,-37,-35,-32,-37,-33,-43,-32,-47,-23,-45,-21,-69,2,-72,3,-74,-25,-35,-64,-31,-61,-32,-68,-17,-87,-16,-104,-18,-108,-18,-124]],"i":[[-1,-63,22,-26,19,-22,18,-16,11,-14,-1,-17,-18,-16,-18,-34]],"c":[[-1,-48,12,-31,14,-26,9,-21,2,-23,-11,-22,-11,-32]],"r":[[0,-70,12,-46,22,-34,22,-14,20,-11,7,-10,0,-12],[24,-28,29,-19,27,-9,25,-10,24,-13]]},{"b":[-26,-26,-24,-11,-28,-9,-29,-20],"i":[],"c":[],"r":[]},{"b":[32,-16,51,-2,59,7,39,37,39,32,35,30,30,21,28,22,27,40,29,43,35,40,22,50,18,40,17,28,28,16],"i":[[35,-8,53,6,40,27,32,16]],"c":[[41,5,44,7,40,14]],"r":[]},{"b":[-33,-15,-29,15,-17,28,-23,50,-37,39,-31,41,-31,34,-37,34,-40,31,-42,34,-59,7,-50,-3],"i":[[-37,-7,-33,17,-22,29,-25,42,-27,32,-30,29,-40,27,-53,7]],"c":[[-42,5,-41,13,-45,7]],"r":[]},{"b":[-21,-6,27,-6,28,0,23,15,16,13,11,17,-20,17,-25,12,-29,-4,-27,-6],"i":[[-19,-2,13,-2,16,3,22,4,21,9,14,9,8,13,-18,13,-24,-1]],"c":[[-15,4,8,4,5,7,-14,7]],"r":[]},{"b":[-1,27,10,27,13,29,22,105,8,130,4,136,3,133,0,133,-1,139,-9,128,-22,104,-18,93,-20,79,-13,29,-10,27],"i":[[-5,31,8,32,14,76,14,83,10,86,10,91,13,98,18,101,4,128,-2,129,-17,105,-14,95,-15,81,-10,38,-8,32]],"c":[[-2,37,2,37,4,43,8,78,4,83,4,94,10,104,0,121,-10,104,-8,97,-9,84]],"r":[]}];
+THREE.ColorManagement.enabled=false;
+const first=(()=>{try{const f=!sessionStorage.getItem('rs2');sessionStorage.setItem('rs2',1);return f}catch(e){return true}})();
+const SPEED=first?1:.45, TI=2.55;                 // TI = moment of impact (s)
+
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});renderer.setClearColor(0x000000,0);
+renderer.outputColorSpace=THREE.LinearSRGBColorSpace;
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+document.body.prepend(renderer.domElement);
+const scene=new THREE.Scene(),cam=new THREE.PerspectiveCamera(40,1,.1,60);
+const rig=new THREE.Group(),logo=new THREE.Group();scene.add(rig);rig.add(logo);
+
+// ---------- helmet (same hologram material as before) ----------
+const mk=(gain,a,b,tr=false,scr=3)=>new THREE.ShaderMaterial({transparent:tr,
+ uniforms:{uT:{value:0},uS:{value:scr},uFade:{value:1},uGain:{value:gain},uA:{value:new THREE.Color(a)},uB:{value:new THREE.Color(b)}},
+ vertexShader:`varying vec3 vN,vV,vW;void main(){vec4 mv=modelViewMatrix*vec4(position,1.);vN=normalMatrix*normal;vV=-mv.xyz;
+  vW=(modelMatrix*vec4(position,1.)).xyz;gl_Position=projectionMatrix*mv;}`,
+ fragmentShader:`varying vec3 vN,vV,vW;uniform float uT,uGain,uS,uFade;uniform vec3 uA,uB;
+ void main(){vec3 n=normalize(vN),v=normalize(vV);
+  float fr=pow(1.-abs(dot(n,v)),2.5),gy=smoothstep(-1.6,1.6,vW.y);
+  float l=.3+.7*max(dot(n,normalize(vec3(-.4,.8,.6))),0.);
+  float sc=.86+.14*sin(vW.y*90.-uT*uS),fl=.96+.04*sin(uT*37.)*sin(uT*11.);
+  vec3 c=mix(uB,uA,gy)*l*uGain*sc*fl+fr*vec3(1.,.22,.18);gl_FragColor=vec4(c*uFade,uFade);}`});
+const M={b:mk(.8,0xff3030,0xa00008),i:mk(1,0xff4545,0xe00010),c:mk(1.2,0xff6060,0xff1a1a),r:mk(1.6,0xff9a9a,0xff2020)};
+const DEP={b:.30,i:.42,c:.52,r:.64};
+const edgeMat=new THREE.LineBasicMaterial({color:0xff5a5a,transparent:true,opacity:0});
+const path=(s,a)=>{for(let k=0;k<a.length;k+=2){const x=a[k]/100,y=a[k+1]/100;k?s.lineTo(x,y):s.moveTo(x,y)}return s};
+const shapeOf=(a,hs)=>{const s=path(new THREE.Shape(),a);for(const h of hs||[])s.holes.push(path(new THREE.Path(),h));return s};
+const R=()=>Math.random()-.5;
+const groups=PLATES.map((p,i)=>{
+ const grp=new THREE.Group();
+ for(const key of ['b','i','c','r'])for(const lp of key=='b'?[p.b]:p[key]){
+  const d=DEP[key],geo=new THREE.ExtrudeGeometry(shapeOf(lp,key=='b'?p.h:null),{depth:d,bevelEnabled:true,bevelThickness:.012,bevelSize:.012,bevelSegments:1});
+  geo.translate(0,0,-d/2);grp.add(new THREE.Mesh(geo,M[key]),new THREE.LineSegments(new THREE.EdgesGeometry(geo,30),edgeMat))}
+ grp.userData={d:1.45+i*.07,from:new THREE.Vector3(R()*10,R()*8,7+Math.random()*5),rot:new THREE.Vector3(R()*8,R()*8,R()*8)};
+ logo.add(grp);return grp});
+
+// ---------- esports HUD rings ----------
+const rm=(c,seg)=>new THREE.ShaderMaterial({transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide,
+ uniforms:{p:{value:0},a:{value:1},c:{value:new THREE.Color(c)},s:{value:seg}},
+ vertexShader:`varying vec2 v;void main(){v=position.xy;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
+ fragmentShader:`varying vec2 v;uniform float p,a,s;uniform vec3 c;void main(){float f=atan(v.y,v.x)/6.2832+.5;
+  if(f>p)discard;if(s>0.&&fract(f*s)>.78)discard;gl_FragColor=vec4(c*a,a);}`});
+const D2R=Math.PI/180,cs=Math.cos,sn=Math.sin;
+const sector=(r0,r1,a0,a1,sk)=>{const s=new THREE.Shape();s.moveTo(r1*cs(a0),r1*sn(a0));s.absarc(0,0,r1,a0,a1,false);
+ s.lineTo(r0*cs(a1+sk),r0*sn(a1+sk));s.absarc(0,0,r0,a1+sk,a0+sk,true);return s};
+const RM=[mk(.7,0xff3030,0x900008,true,0),mk(1,0xff5555,0xe00010,true,0),mk(1.1,0xff6a6a,0xff1a1a,true,0),mk(1.8,0xffa0a0,0xff2020,true,0)];
+const ringEdge=new THREE.LineBasicMaterial({color:0xff6a6a,transparent:true,opacity:0});
+const ext=(s,d)=>{const g=new THREE.ExtrudeGeometry(s,{depth:d,bevelEnabled:true,bevelThickness:.015,bevelSize:.015,bevelSegments:1});g.translate(0,0,-d/2);return g};
+const ringG=[];
+[[0,3.1,3.4,8,36,5,.12,0],[1,2.74,2.84,3,98,0,.08,90],[2,2.4,2.58,4,66,8,.1,45]].forEach(([m,r0,r1,n,sp,sk,d,off],i)=>{
+ const g=new THREE.Group();
+ for(let j=0;j<n;j++){const a0=(off+j*360/n)*D2R,geo=ext(sector(r0,r1,a0,a0+sp*D2R,sk*D2R),d);
+  g.add(new THREE.Mesh(geo,RM[m]),new THREE.LineSegments(new THREE.EdgesGeometry(geo,30),ringEdge))}
+ g.position.z=-.7;g.userData={d:.2+i*.25,m:RM[m]};rig.add(g);ringG.push(g)});
+const marks=new THREE.Group();
+for(let k=0;k<4;k++){const th=k*Math.PI/2,s=new THREE.Shape();s.moveTo(0,0);s.lineTo(-.13,.26);s.lineTo(.13,.26);
+ const geo=ext(s,.08),m=new THREE.Mesh(geo,RM[3]);m.position.set(3.55*cs(th),3.55*sn(th),0);m.rotation.z=th-Math.PI/2;
+ marks.add(m,new THREE.LineSegments(new THREE.EdgesGeometry(geo,30),ringEdge).translateX(m.position.x).translateY(m.position.y).rotateZ(0))}
+marks.children.forEach((c,i)=>{if(c.isLineSegments){c.rotation.z=marks.children[i-1].rotation.z}});
+marks.position.z=-.7;marks.userData={d:.8,m:RM[3]};rig.add(marks);ringG.push(marks);
+const hair=(r0,r1,s,a,c)=>{const m=new THREE.Mesh(new THREE.RingGeometry(r0,r1,160,1),rm(c,s));
+ m.material.uniforms.p.value=1;m.position.z=-.7;m.userData.a=a;rig.add(m);return m};
+const hairs=[hair(2.9,2.92,0,.9,0xff4a4a),hair(2.2,2.23,0,.9,0xff7a7a),hair(2.05,2.08,48,.8,0xff3a3a),hair(3.45,3.47,0,.6,0xff3030)];
+const tp=[];for(let i=0;i<120;i++){const a=i/120*6.2832,r0=3.62,r1=i%6?3.7:3.82;tp.push(cs(a)*r0,sn(a)*r0,0,cs(a)*r1,sn(a)*r1,0)}
+const tg=new THREE.BufferGeometry();tg.setAttribute('position',new THREE.Float32BufferAttribute(tp,3));
+const ticks=new THREE.LineSegments(tg,new THREE.LineBasicMaterial({color:0xff2a2a,transparent:true,opacity:0,blending:THREE.AdditiveBlending}));
+ticks.position.z=-.7;rig.add(ticks);
+const shock=new THREE.Mesh(new THREE.RingGeometry(.97,1,128),rm(0xff5a5a,0));shock.material.uniforms.p.value=1;shock.position.z=-.3;shock.visible=false;rig.add(shock);
+
+// ---------- impact sparks ----------
+const N=180,sp=new Float32Array(N*3),vel=[];
+for(let i=0;i<N;i++){const a=Math.random()*6.283,s=2+Math.random()*5;vel.push([Math.cos(a)*s,Math.sin(a)*s,R()*4])}
+const sg=new THREE.BufferGeometry();sg.setAttribute('position',new THREE.BufferAttribute(sp,3));
+const sparks=new THREE.Points(sg,new THREE.PointsMaterial({size:.07,color:0xff3535,transparent:true,opacity:0,depthWrite:false,blending:THREE.AdditiveBlending}));
+sparks.visible=false;rig.add(sparks);
+
+const comp=new EffectComposer(renderer);comp.addPass(new RenderPass(scene,cam));
+const bloom=new UnrealBloomPass(new THREE.Vector2(1,1),.8,.55,.18);comp.addPass(bloom);
+// Bloom's render-to-screen path forces opaque alpha (black square); finish
+// with a straight copy pass so the canvas stays transparent.
+comp.addPass(new ShaderPass(CopyShader));
+function resize(){const w=innerWidth,h=innerHeight;renderer.setSize(w,h);comp.setSize(w,h);cam.aspect=w/h;
+ cam.position.set(0,0,11.8/Math.min(1,cam.aspect*1.1));cam.updateProjectionMatrix()}
+addEventListener('resize',resize);resize();
+const cl=(v,a,b)=>Math.min(b,Math.max(a,v)),eo=t=>1-Math.pow(1-t,3),eb=t=>{const c=1.9;return 1+(c+1)*Math.pow(t-1,3)+c*Math.pow(t-1,2)};
+const clock=new THREE.Clock();
+renderer.setAnimationLoop(()=>{
+ const t=clock.getElapsedTime(),ti=t*SPEED,after=ti-TI;
+ for(const m of Object.values(M))m.uniforms.uT.value=t;
+ // rings: expand + fade in once, then perfectly still
+ const SPN=[.25,-.45,.7,-.12];                                          // ring spin speeds (rad/s), alternating directions
+ ringG.forEach((g,i)=>{const k=eo(cl((ti-.15-g.userData.d)/1.1,0,1));g.scale.setScalar(.6+.4*k);g.userData.m.uniforms.uFade.value=k;g.rotation.z=SPN[i]*t});
+ hairs[2].rotation.z=-.9*t;ticks.rotation.z=.08*t;
+ const k4=eo(cl((ti-.9)/1,0,1));ringEdge.opacity=k4*.8;ticks.material.opacity=k4*.9;
+ hairs.forEach(h=>h.material.uniforms.a.value=h.userData.a*k4);
+ // helmet slams in
+ for(const gp of groups){const u=gp.userData,k=eb(cl((ti-u.d)/.9,0,1)),f=1-k;
+  gp.position.copy(u.from).multiplyScalar(f);gp.rotation.set(u.rot.x*f,u.rot.y*f,u.rot.z*f)}
+ logo.scale.setScalar(after>0?1+.14*Math.exp(-after*9)*Math.cos(after*14):1);
+ logo.rotation.y=after>0?(2*Math.PI/6)*(after+(Math.exp(-2*after)-1)/2):0;   // endless 360 spin (6s per turn)
+ logo.position.y=Math.sin(t*1.2)*.08*cl(after,0,1);
+ edgeMat.opacity=cl((ti-2.2)/.5,0,1)*(.75+.25*Math.sin(t*30)*Math.sin(t*7));
+ // impact effects
+ const on=after>0;shock.visible=sparks.visible=on;
+ if(on){const k=cl(after/1.1,0,1);shock.scale.setScalar(.5+eo(k)*6);shock.material.uniforms.a.value=(1-k)*1.6;
+  const p=sg.attributes.position;for(let i=0;i<N;i++){const e=Math.min(after,1.6);
+   p.setXYZ(i,vel[i][0]*e,vel[i][1]*e-2.2*e*e,vel[i][2]*e)}p.needsUpdate=true;
+  sparks.material.opacity=Math.max(0,1-after/1.5)}
+ bloom.strength=.8+(on?2.4*Math.exp(-after*5):0);
+ comp.render()});
+</script></body></html>

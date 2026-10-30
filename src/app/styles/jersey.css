@@ -1,0 +1,154 @@
+/* ==========================================================================
+   ALRS · jersey.css — 3D extruded org-shirt render (Jersey3D)
+   ========================================================================== */
+
+.jersey-showcase {
+  position: relative;
+  margin: 8px 0 44px;
+}
+
+.kitrack {
+  position: relative;
+  width: 100%;
+  min-height: min(620px, 70vh);
+  perspective: 1400px;
+}
+
+.kitrack__glow {
+  position: absolute;
+  width: 66%;
+  height: 66%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 33, 56, .34), transparent 66%);
+  filter: blur(64px);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.jersey3d {
+  position: absolute;
+  left: calc(50% + (var(--x, 0) * var(--spread, 1) * 1%));
+  top: 50%;
+  z-index: var(--zidx, 1);
+  width: min(300px, 42vw);
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translate(-50%, -50%) translateY(var(--y, 0px)) scale(var(--scale, 1)) rotate(var(--rz, 0deg));
+  transform-style: preserve-3d;
+  transition: transform .5s var(--e-out);
+}
+
+.jersey3d__stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  perspective: 900px;
+}
+
+.jersey3d__obj {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  animation: jerseySpin var(--dur, 21s) linear infinite;
+  animation-delay: calc(var(--i, 0) * -5s);
+  will-change: transform;
+}
+
+.jersey3d__layer,
+.jersey3d__front,
+.jersey3d__back,
+.jersey3d__sheen {
+  position: absolute;
+  inset: 0;
+  background-image: var(--src);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  transform: translateZ(var(--z, 0px));
+  backface-visibility: visible;
+}
+
+.jersey3d__layer { filter: brightness(var(--lum, .5)) saturate(.88) contrast(1.02); }
+.jersey3d__front { transform: translateZ(2px); }
+.jersey3d__back {
+  transform: translateZ(calc(-1 * (28px + 2px))) rotateY(180deg);
+  filter: brightness(.34) saturate(.85);
+}
+
+/* moving studio light, masked to the shirt silhouette */
+.jersey3d__sheen {
+  transform: translateZ(5px);
+  background: linear-gradient(112deg, transparent 40%, rgba(255, 255, 255, .9) 49%, rgba(255, 255, 255, .25) 53%, transparent 62%);
+  background-size: 260% 100%;
+  background-repeat: no-repeat;
+  -webkit-mask-image: var(--src);
+  mask-image: var(--src);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  mix-blend-mode: overlay;
+  opacity: .85;
+  animation: jerseySheen 5.5s cubic-bezier(.65, 0, .35, 1) infinite;
+  pointer-events: none;
+}
+
+.jersey3d__base {
+  position: absolute;
+  left: 50%;
+  bottom: 4%;
+  width: 72%;
+  height: 32px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(255, 33, 56, .5), rgba(53, 224, 242, .12) 55%, transparent 72%);
+  filter: blur(11px);
+  pointer-events: none;
+}
+
+.jersey3d__tag {
+  margin-top: 20px;
+  font-family: var(--font-mono);
+  font-size: .66rem;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+}
+.jersey3d__tag b {
+  color: var(--red);
+  font-family: var(--font-display);
+  letter-spacing: .14em;
+  margin-right: 6px;
+}
+
+@keyframes jerseySpin {
+  from { transform: rotateX(var(--tilt, -7deg)) rotateY(0deg); }
+  to   { transform: rotateX(var(--tilt, -7deg)) rotateY(360deg); }
+}
+@keyframes jerseySheen {
+  0%   { background-position: 160% 0; }
+  55%  { background-position: -60% 0; }
+  100% { background-position: -60% 0; }
+}
+
+@media (max-width: 900px) {
+  .kitrack { min-height: min(500px, 62vh); --spread: .68; }
+  .jersey3d { width: min(240px, 46vw); }
+}
+
+@media (max-width: 620px) {
+  .kitrack { min-height: min(420px, 56vh); --spread: .56; }
+  .jersey3d { width: min(190px, 52vw); }
+  .jersey3d__tag { font-size: .58rem; letter-spacing: .16em; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jersey3d__obj { animation: none; transform: rotateX(var(--tilt, -7deg)) rotateY(-26deg); }
+  .jersey3d__sheen { animation: none; background-position: 40% 0; }
+}

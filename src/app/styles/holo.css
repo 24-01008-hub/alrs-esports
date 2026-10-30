@@ -1,0 +1,326 @@
+/* ==========================================================================
+   ALRS · holo.css — holographic 3D logo stage + moving esports background
+   ========================================================================== */
+
+:root{
+  /* extruded silhouette of the Red Spartans helmet (single-path data URI) */
+  --helm-mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Cpath%20fill='%23fff'%20fill-rule='evenodd'%20d='M32,12A30,30,0,0,1,60.19,31.74L52.67,34.48A22,22,0,0,0,32,20ZM10,42A22,22,0,0,1,54,42V57L51,63H44V51H35.5V63H28.5V51H20V63H13L10,57ZM19,43.6V49.4H27.6V43.6ZM36.4,43.6V49.4H45V43.6Z'/%3E%3C/svg%3E");
+}
+
+/* ======================================================== 3D HOLO LOGO === */
+.holo3d{
+  --size: min(430px, 78vw);
+  --spin: 0;
+  --tiltX: -6deg;
+  position: relative;
+  width: var(--size); height: var(--size);
+  margin-inline: auto;
+  perspective: 1200px;
+  perspective-origin: 50% 46%;
+  touch-action: none;
+  cursor: grab;
+  user-select: none; -webkit-user-select: none;
+  outline: none;
+}
+.holo3d:active { cursor: grabbing; }
+.holo3d:focus-visible { box-shadow: 0 0 0 3px rgba(53,224,242,.6); border-radius: 50%; }
+
+/* ambient halo + rings behind the object */
+.holo3d__halo{
+  position: absolute; inset: 4%; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,33,56,.42) 0%, rgba(53,224,242,.16) 45%, transparent 70%);
+  filter: blur(34px);
+  animation: holoHalo 5.5s ease-in-out infinite;
+  pointer-events: none;
+}
+.holo3d__ring{
+  position: absolute; inset: 0; border-radius: 50%;
+  border: 1px solid rgba(53,224,242,.28);
+  box-shadow: 0 0 26px rgba(53,224,242,.16), inset 0 0 26px rgba(53,224,242,.10);
+  pointer-events: none;
+  animation: spinRing 26s linear infinite;
+}
+.holo3d__ring::before,
+.holo3d__ring::after{
+  content:''; position: absolute; border-radius: 50%;
+}
+.holo3d__ring::before{
+  inset: 7%; border: 1px dashed rgba(255,33,56,.42);
+  animation: spinRing 17s linear infinite reverse;
+}
+.holo3d__ring::after{
+  inset: -7%; border: 1px solid rgba(255,197,49,.20);
+  border-left-color: transparent; border-right-color: transparent;
+  animation: spinRing 11s linear infinite;
+}
+.holo3d__ticks{
+  position: absolute; inset: -14%; border-radius: 50%;
+  background:
+    repeating-conic-gradient(from 0deg, rgba(53,224,242,.55) 0deg 1deg, transparent 1deg 9deg);
+  -webkit-mask: radial-gradient(closest-side, transparent 82%, #000 83%, #000 87%, transparent 88%);
+  mask: radial-gradient(closest-side, transparent 82%, #000 83%, #000 87%, transparent 88%);
+  opacity: .55; pointer-events: none;
+  animation: spinRing 40s linear infinite;
+}
+
+/* ---------------------------------------------------------- 3D scene --- */
+.holo3d__stage{
+  position: absolute; inset: 0;
+  transform-style: preserve-3d;
+  display: grid; place-items: center;
+  pointer-events: none;
+}
+.holo3d__obj{
+  position: relative;
+  width: 74%; height: 74%;
+  transform-style: preserve-3d;
+  transform: rotateX(var(--tiltX)) rotateY(calc(var(--spin) * 1deg));
+  will-change: transform;
+  filter: drop-shadow(0 26px 44px rgba(0,0,0,.62));
+}
+
+/* extrusion layers */
+.holo3d__layer{
+  position: absolute; inset: 0;
+  -webkit-mask: var(--helm-mask) center / contain no-repeat;
+  mask: var(--helm-mask) center / contain no-repeat;
+  transform: translateZ(var(--z));
+  background: var(--c);
+  backface-visibility: visible;
+}
+/* front body face */
+.holo3d__face{
+  position: absolute; inset: 0;
+  -webkit-mask: var(--helm-mask) center / contain no-repeat;
+  mask: var(--helm-mask) center / contain no-repeat;
+  background:
+    linear-gradient(150deg, #FFFFFF 0%, #E7EAF2 34%, #B9BFCE 62%, #8E95A8 100%);
+  transform: translateZ(1.5px);
+}
+/* moving studio softbox — screen-lit patch that sweeps over the object as it turns */
+.holo3d__light{
+  position: absolute; inset: 0;
+  -webkit-mask: var(--helm-mask) center / contain no-repeat;
+  mask: var(--helm-mask) center / contain no-repeat;
+  transform: translateZ(6px);
+  background:
+    radial-gradient(46% 40% at 30% 24%, rgba(255,255,255,.95), rgba(255,255,255,.16) 46%, rgba(255,255,255,0) 72%),
+    radial-gradient(40% 36% at 74% 80%, rgba(53,224,242,.32), rgba(53,224,242,0) 62%);
+  mix-blend-mode: soft-light;
+  opacity: .85;
+  pointer-events: none;
+}
+/* engraved back plate */
+.holo3d__back{
+  position: absolute; inset: 0;
+  -webkit-mask: var(--helm-mask) center / contain no-repeat;
+  mask: var(--helm-mask) center / contain no-repeat;
+  background: linear-gradient(150deg, #3A1018, #14141C 60%, #0B0B12);
+  transform: translateZ(calc(var(--depth) * -1 - 1.5px)) rotateY(180deg);
+}
+
+/* holographic iridescence, specular sweep and scanlines (masked to helmet) */
+.holo3d__fx{
+  position: absolute; inset: 0;
+  -webkit-mask: var(--helm-mask) center / contain no-repeat;
+  mask: var(--helm-mask) center / contain no-repeat;
+  transform: translateZ(2.5px);
+  pointer-events: none;
+}
+.holo3d__holo{
+  position: absolute; inset: 0;
+  background: linear-gradient(112deg,
+    rgba(255,33,56,0)   6%,
+    rgba(255,33,56,.95) 17%,
+    rgba(255,197,49,.95)29%,
+    rgba(53,224,242,.9) 41%,
+    rgba(185,103,255,.9)53%,
+    rgba(47,224,138,.85)65%,
+    rgba(255,33,56,.95) 77%,
+    rgba(255,197,49,0)  93%);
+  background-size: 340% 340%;
+  filter: hue-rotate(calc(var(--spin) * 1deg)) saturate(1.45) contrast(1.1);
+  mix-blend-mode: screen;
+  opacity: .74;
+  animation: holoFlow 6.5s linear infinite;
+}
+.holo3d__spec{
+  position: absolute; inset: 0;
+  background: linear-gradient(102deg, transparent 34%, rgba(255,255,255,.9) 47%, rgba(255,255,255,.35) 53%, transparent 64%);
+  background-size: 300% 100%;
+  background-position: 130% 0;
+  mix-blend-mode: overlay;
+  animation: specSweep 5.2s cubic-bezier(.65,0,.35,1) infinite;
+}
+.holo3d__scan{
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(0deg, rgba(255,255,255,.14) 0 1px, rgba(0,0,0,0) 1px 3px);
+  mix-blend-mode: soft-light;
+  opacity: .8;
+}
+.holo3d__edge{
+  position: absolute; inset: -2px;
+  background: linear-gradient(180deg, rgba(53,224,242,.85), rgba(255,33,56,.85));
+  -webkit-mask: var(--helm-mask) center / contain no-repeat;
+  mask: var(--helm-mask) center / contain no-repeat;
+  transform: translateZ(-1px) scale(1.012);
+  filter: blur(3px);
+  opacity: .65;
+}
+
+/* floating holo motes around the object */
+.holo3d__mote{
+  position: absolute; left: 50%; top: 50%;
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--c, var(--cyan));
+  box-shadow: 0 0 12px var(--c, var(--cyan));
+  opacity: 0;
+  animation: moteRise var(--dur, 7s) linear infinite;
+  animation-delay: var(--delay, 0s);
+  pointer-events: none;
+}
+
+/* base / reflection */
+.holo3d__base{
+  position: absolute; left: 14%; right: 14%; bottom: -4%;
+  height: 26px; border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(255,33,56,.55), rgba(53,224,242,.18) 55%, transparent 72%);
+  filter: blur(11px);
+  animation: basePulse 4.4s ease-in-out infinite;
+  pointer-events: none;
+}
+.holo3d__base::after{
+  content:''; position: absolute; left: 50%; top: -6px; transform: translateX(-50%);
+  width: 62%; height: 12px; border-radius: 50%;
+  border: 1px solid rgba(53,224,242,.5);
+  animation: spinFlat 6s linear infinite;
+}
+
+/* HUD caption + hint */
+.holo3d__hud{
+  position: absolute; left: 50%; bottom: -46px; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 10px; white-space: nowrap;
+  font-family: var(--font-mono); font-size: .6rem; letter-spacing: .22em;
+  text-transform: uppercase; color: rgba(53,224,242,.85);
+  background: rgba(8,8,14,.72); border: 1px solid rgba(53,224,242,.35);
+  padding: 7px 14px; border-radius: 999px; backdrop-filter: blur(8px);
+  pointer-events: none;
+}
+.holo3d__hud i { width: 6px; height: 6px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 8px var(--cyan); animation: pulseDot 1.6s infinite; }
+.holo3d__spin{
+  position: absolute; top: -34px; left: 50%; transform: translateX(-50%);
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--font-mono); font-size: .58rem; letter-spacing: .2em;
+  text-transform: uppercase; color: rgba(255,197,49,.9);
+  pointer-events: none; opacity: .9;
+}
+.holo3d__spin svg { animation: spinRing 6s linear infinite; }
+
+.holo3d--sm { --size: min(230px, 60vw); }
+.holo3d--lg { --size: min(520px, 84vw); }
+.holo3d.is-idle .holo3d__obj { transition: none; }
+.holo3d.is-dragging { cursor: grabbing; }
+
+/* ==================================================== MOVING BG UPGRADE === */
+/* diagonal energy streaks layered behind content */
+.bg-streaks{
+  position: fixed; inset: -20%; z-index: -2; pointer-events: none; overflow: hidden;
+  background: repeating-linear-gradient(
+    115deg,
+    transparent 0 140px,
+    rgba(255,33,56,.045) 140px 142px,
+    transparent 142px 300px,
+    rgba(53,224,242,.04) 300px 301px,
+    transparent 301px 460px
+  );
+  animation: streakSlide 26s linear infinite;
+}
+.bg-streaks::after{
+  content:''; position: absolute; inset: 0;
+  background: linear-gradient(180deg, transparent 45%, rgba(6,6,10,.85) 100%);
+}
+
+/* slow rotating "radar" sweep, esports HUD flavour */
+.bg-radar{
+  position: fixed; z-index: -2; right: -16vw; top: 8vh;
+  width: 62vw; height: 62vw; max-width: 820px; max-height: 820px;
+  border-radius: 50%; pointer-events: none; opacity: .5;
+  background: conic-gradient(from 0deg, rgba(255,33,56,.20), transparent 26%, transparent 100%);
+  -webkit-mask: radial-gradient(closest-side, transparent 34%, #000 35%, #000 99%, transparent 100%);
+  mask: radial-gradient(closest-side, transparent 34%, #000 35%, #000 99%, transparent 100%);
+  animation: spinRing 14s linear infinite;
+}
+.bg-radar::before{
+  content:''; position: absolute; inset: 16%; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,.055);
+}
+.bg-radar::after{
+  content:''; position: absolute; inset: 33%; border-radius: 50%;
+  border: 1px dashed rgba(53,224,242,.16);
+}
+
+/* sweeping horizontal scan band across the whole page */
+.bg-sweep{
+  position: fixed; left: 0; right: 0; height: 190px; z-index: -2; pointer-events: none;
+  background: linear-gradient(180deg, transparent, rgba(53,224,242,.055) 45%, rgba(255,33,56,.07) 55%, transparent);
+  animation: pageSweep 11s linear infinite;
+}
+
+/* ============================================================== KEYFRAMES */
+@keyframes holoFlow {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 340% 50%; }
+}
+@keyframes specSweep {
+  0%   { background-position: 140% 0; }
+  55%  { background-position: -60% 0; }
+  100% { background-position: -60% 0; }
+}
+@keyframes holoHalo {
+  0%,100% { transform: scale(1); opacity: .8; }
+  50%     { transform: scale(1.1); opacity: 1; }
+}
+@keyframes spinRing { to { transform: rotate(360deg); } }
+@keyframes spinFlat {
+  0%   { transform: translateX(-50%) rotateX(72deg) rotateZ(0deg); }
+  100% { transform: translateX(-50%) rotateX(72deg) rotateZ(360deg); }
+}
+@keyframes basePulse {
+  0%,100% { opacity: .75; transform: scaleX(1); }
+  50%     { opacity: 1; transform: scaleX(1.06); }
+}
+@keyframes moteRise {
+  0%   { opacity: 0; transform: translate(-50%, 20px) scale(.6); }
+  12%  { opacity: 1; }
+  80%  { opacity: .7; }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--dx, 40px)), calc(var(--rise, -220px))) scale(1.15); }
+}
+@keyframes streakSlide {
+  from { transform: translate3d(0,0,0); }
+  to   { transform: translate3d(-460px, 260px, 0); }
+}
+@keyframes pageSweep {
+  0%   { top: -220px; }
+  100% { top: 110vh; }
+}
+
+@media (max-width: 760px){
+  .holo3d { --size: min(340px, 82vw); }
+  .holo3d--lg { --size: min(380px, 86vw); }
+  .holo3d__hud { bottom: -42px; font-size: .54rem; }
+  .bg-radar { opacity: .3; }
+}
+@media (prefers-reduced-motion: reduce){
+  .holo3d__holo, .holo3d__spec, .holo3d__ring, .holo3d__ring::before, .holo3d__ring::after,
+  .holo3d__ticks, .holo3d__halo, .holo3d__base, .holo3d__spin svg,
+  .bg-streaks, .bg-radar, .bg-sweep { animation: none !important; }
+}
+
+/* ------------------------------------------------ uploaded logo as artwork */
+html.has-custom-logo .holo3d__face{
+  background-image: var(--helm-art);
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+html.has-custom-logo .holo3d__back{ opacity: .95; }

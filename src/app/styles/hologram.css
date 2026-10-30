@@ -1,0 +1,54 @@
+/* ==========================================================================
+   ALRS · hologram.css — frameless WebGL stage for the Spartan hologram
+   (no border, no backdrop, no glow — the hologram floats over the page)
+   ========================================================================== */
+
+.holo-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  max-height: 620px;
+  overflow: hidden;
+  background: transparent;
+  cursor: grab;
+  touch-action: pan-y; /* horizontal drag spins the logo, vertical still scrolls */
+  user-select: none;
+  -webkit-user-select: none;
+}
+.holo-stage.is-dragging {
+  cursor: grabbing;
+}
+.holo-stage canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.holo-stage__cap {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 6%;
+  text-align: center;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(11px, 1.6vw, 17px);
+  letter-spacing: 0.6em;
+  text-indent: 0.6em;
+  color: #ff5a2a;
+  text-shadow: 0 0 14px #f20;
+  text-transform: uppercase;
+  opacity: 0;
+  pointer-events: none;
+  animation: holoCapIn 1.6s 2.6s forwards;
+}
+.holo-stage__cap b {
+  color: #fff;
+}
+@keyframes holoCapIn {
+  to {
+    opacity: 1;
+    letter-spacing: 0.38em;
+    text-indent: 0.38em;
+  }
+}
